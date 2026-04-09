@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { GetStandaloneApp, GetCurrentDevice } from '../services/electron';
+import { GetStandaloneApp, GetCurrentDevice, clearBrowserState } from '../services/electron';
 import { isBrowser } from '../services/runtime';
 import { useSimulatorWs } from './useSimulatorWs';
 
@@ -27,6 +27,12 @@ export function useAppMode(): AppMode {
         const standalone = await GetStandaloneApp();
         if (standalone) {
           if (!cancelled) setMode('simulator');
+          return;
+        }
+        // In browser mode, only restore a device if "remember" was checked
+        if (isBrowser && !localStorage.getItem('sim-rememberSelection')) {
+          clearBrowserState();
+          if (!cancelled) setMode('picker');
           return;
         }
         const initialDevice = await GetCurrentDevice();

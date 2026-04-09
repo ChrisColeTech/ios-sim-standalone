@@ -49,7 +49,7 @@ export default function App() {
   useEffect(() => {
     if (!isBrowser) return;
     if (mode !== 'simulator') return;
-    const deviceId = localStorage.getItem('sim-device');
+    const deviceId = useUiStoreState.getState().deviceId ?? localStorage.getItem('sim-device');
     if (!deviceId) return;
     const device = DEVICES.find((d) => d.id === deviceId);
     if (!device) return;

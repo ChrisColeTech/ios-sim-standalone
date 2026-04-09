@@ -149,8 +149,8 @@ export function useSConnectData() {
 
   const needsAdminSetup = useCallback((): boolean => {
     if (!user) return false;
-    const hasBanner = !!(banner ?? user.bannerDetail);
-    const hasStore = !!(user.storeNumber ?? customStoreNumber ?? defaultStoreNumber) || isAtHome;
+    const hasBanner = !!(banner ?? user.previousBannerDetail ?? user.bannerDetail);
+    const hasStore = !!(user.storeNumber ?? user.previousStoreNumber ?? customStoreNumber ?? defaultStoreNumber) || isAtHome;
     return !(hasBanner && hasStore);
   }, [user, banner, customStoreNumber, defaultStoreNumber, isAtHome]);
 

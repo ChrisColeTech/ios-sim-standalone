@@ -44,15 +44,14 @@ export function useSimulatorWs(
   menuCbRef.current = onMenuAction;
   appCmdCbRef.current = onAppCommand;
 
-  // In browser mode, subscribe to any Zustand store change and re-read localStorage
+  // In browser mode, subscribe to Zustand store changes
   useEffect(() => {
     if (!isBrowser) return;
 
     const sync = () => {
       const s = useUiStoreState.getState();
-      const device = localStorage.getItem('sim-device') ?? null;
       setState({
-        device,
+        device: s.deviceId,
         isLandscape: s.isLandscape,
         theme: s.theme,
         devToolsOpen: false,

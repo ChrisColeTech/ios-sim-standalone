@@ -3,7 +3,8 @@
  *
  * Electron mode  → calls through window.electronAPI (set by preload.ts),
  *                  falls back to localhost HTTP endpoints.
- * Browser mode   → pure client-side: localStorage + Zustand, no backend.
+ * Browser mode   → pure client-side: Zustand store is the source of truth.
+ *                  localStorage is ONLY used when "remember" is checked.
  */
 
 import { isBrowser } from './runtime';
@@ -12,7 +13,17 @@ import { useUiStoreState } from '../store/uiStore';
 const api = () => window.electronAPI;
 
 const STORAGE_DEVICE = 'sim-device';
-const STORAGE_REMEMBER = 'sim-rememberDevice';
+const STORAGE_REMEMBER = 'sim-rememberSelection';
+const STORAGE_THEME = 'sim-theme';
+const STORAGE_UI = 'frontend-ui-store';
+
+/** Wipe all simulator keys from localStorage. */
+export function clearBrowserState(): void {
+  localStorage.removeItem(STORAGE_DEVICE);
+  localStorage.removeItem(STORAGE_REMEMBER);
+  localStorage.removeItem(STORAGE_THEME);
+  localStorage.removeItem(STORAGE_UI);
+}
 
 // ---------------------------------------------------------------------------
 // Window controls
@@ -69,21 +80,21 @@ export async function GetStandaloneApp(): Promise<string> {
 
 export async function GetCurrentDevice(): Promise<string> {
   if (isBrowser) {
-    // Check URL param first (from landing page launch with specific device)
+    // URL param takes priority (from landing page launch with specific device)
     const params = new URLSearchParams(window.location.search);
     const urlDevice = params.get('device');
     if (urlDevice) {
-      localStorage.setItem(STORAGE_DEVICE, urlDevice);
-      localStorage.setItem(STORAGE_REMEMBER, 'true');
+      // Set device in store for this session only — don't persist to localStorage
+      useUiStoreState.getState().setSimulatorState({
+        deviceId: urlDevice,
+        deviceFamily: urlDevice.startsWith('ipad') ? 'ipad' : 'iphone',
+        isLandscape: useUiStoreState.getState().isLandscape,
+        theme: useUiStoreState.getState().theme,
+      });
       return urlDevice;
     }
-    // Only return a persisted device if "remember" was checked
-    if (localStorage.getItem(STORAGE_REMEMBER)) {
-      return localStorage.getItem(STORAGE_DEVICE) ?? '';
-    }
-    // No remembered device — clear stale selection and show picker
-    localStorage.removeItem(STORAGE_DEVICE);
-    return '';
+    // Remembered device from a previous session, or current session from store
+    return localStorage.getItem(STORAGE_DEVICE) ?? useUiStoreState.getState().deviceId ?? '';
   }
   if (api()) return api().getCurrentDevice();
   try {
@@ -102,10 +113,11 @@ export async function GetBroadcastState(): Promise<{
   devToolsOpen: boolean;
 }> {
   if (isBrowser) {
+    const store = useUiStoreState.getState();
     return {
       device: localStorage.getItem(STORAGE_DEVICE) ?? '',
-      isLandscape: false,
-      theme: localStorage.getItem('sim-theme') ?? 'dark',
+      isLandscape: store.isLandscape,
+      theme: store.theme,
       devToolsOpen: false,
     };
   }
@@ -120,7 +132,6 @@ export async function GetBroadcastState(): Promise<{
 
 export async function HandleMenuClick(action: string): Promise<void> {
   if (isBrowser) {
-    // Browser mode — dispatch a custom event so the store can react
     window.dispatchEvent(new CustomEvent('sim-menu-action', { detail: action }));
     return;
   }
@@ -130,17 +141,17 @@ export async function HandleMenuClick(action: string): Promise<void> {
 
 export async function SetPendingDevice(device: string, remember: boolean): Promise<void> {
   if (isBrowser) {
-    localStorage.setItem(STORAGE_DEVICE, device);
     if (remember) {
+      localStorage.setItem(STORAGE_DEVICE, device);
       localStorage.setItem(STORAGE_REMEMBER, 'true');
-    } else {
-      localStorage.removeItem(STORAGE_REMEMBER);
     }
-    // Update Zustand store directly so useAppMode/useSimulatorWs react immediately
+    // Update Zustand store — this is the in-session source of truth
+    const s = useUiStoreState.getState();
     useUiStoreState.getState().setSimulatorState({
+      deviceId: device,
       deviceFamily: device.startsWith('ipad') ? 'ipad' : 'iphone',
-      isLandscape: useUiStoreState.getState().isLandscape,
-      theme: useUiStoreState.getState().theme,
+      isLandscape: s.isLandscape,
+      theme: s.theme,
     });
     return;
   }

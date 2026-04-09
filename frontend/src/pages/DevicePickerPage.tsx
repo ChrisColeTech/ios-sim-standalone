@@ -60,6 +60,12 @@ export function DevicePickerPage() {
     }
 
     await SetPendingDevice(id as string, remember);
+
+    // In Electron, the picker window closes and a new simulator window opens.
+    // In browser, same window — clear transitioning after boot animation.
+    setTimeout(() => {
+      useUiStoreState.getState().setTransitioning(false);
+    }, 1500);
   };
 
   const isDark = useUiStoreState((s) => s.theme === 'dark');

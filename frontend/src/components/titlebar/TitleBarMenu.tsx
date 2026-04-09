@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { ChevronRight } from 'lucide-react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { HandleMenuClick, GetBroadcastState, GetStandaloneApp } from '../../services/electron';
+import { HandleMenuClick, GetBroadcastState, GetStandaloneApp, clearBrowserState } from '../../services/electron';
 import { useUiStoreState } from '../../store/uiStore';
 import { useSimulatorWs } from '../../hooks/useSimulatorWs';
 import { useAppMode } from '../../hooks/useAppMode';
@@ -86,6 +86,7 @@ export function TitleBarMenu() {
       items: [
         { label: 'Debug Zones', action: 'debug:zones' },
         { label: 'DevTools', action: 'debug:devtools' },
+        { label: 'Clear Cache', action: 'session:reset' },
       ],
       activeCheck: (a) => {
         if (a === 'debug:zones') return store.showDebugZones;
@@ -111,6 +112,7 @@ export function TitleBarMenu() {
     if (action === 'apps:stock') { store.toggleStockApps(); return; }
     if (action === 'apps:custom') { store.toggleCustomApps(); return; }
     if (action === 'debug:zones') { store.toggleDebugZones(); return; }
+    if (action === 'session:reset') { clearBrowserState(); window.location.reload(); return; }
 
     if (isBrowser) {
       const MENU_BAR_HEIGHT = 30;
@@ -125,7 +127,6 @@ export function TitleBarMenu() {
           isLandscape,
           theme: store.theme,
         });
-        localStorage.setItem('sim-device', deviceId);
 
         if (device) {
           const w = isLandscape ? device.height : device.width;
@@ -134,7 +135,7 @@ export function TitleBarMenu() {
         }
       } else if (action.startsWith('orientation:')) {
         const isLandscape = action === 'orientation:landscape';
-        const deviceId = localStorage.getItem('sim-device') ?? '';
+        const deviceId = useUiStoreState.getState().deviceId ?? '';
         const device = DEVICES.find((d) => d.id === deviceId);
 
         store.setSimulatorState({
@@ -155,7 +156,6 @@ export function TitleBarMenu() {
           isLandscape: store.isLandscape,
           theme,
         });
-        localStorage.setItem('sim-theme', theme);
       }
       return;
     }

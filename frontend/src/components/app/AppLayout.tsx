@@ -59,7 +59,7 @@ export function AppLayout(props: AppLayoutProps) {
     const checkFirstLaunch = async () => {
       if (isBrowser) {
         // In browser mode, check localStorage directly
-        if (localStorage.getItem('sim-rememberDevice')) {
+        if (localStorage.getItem('sim-rememberSelection')) {
           completeHello();
         }
         return;
