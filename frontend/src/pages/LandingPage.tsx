@@ -4,8 +4,27 @@ import type { DeviceId } from '../constants/devices';
 
 const TITLEBAR_HEIGHT = 38;
 
+const ELECTRON_REPO = 'ChrisColeTech/ios-simulator-v2';
+const DOWNLOAD_BASE = `https://github.com/${ELECTRON_REPO}/releases/latest/download`;
+
+type Platform = 'windows' | 'mac' | 'linux';
+
+function detectPlatform(): Platform {
+  const ua = navigator.userAgent.toLowerCase();
+  if (ua.includes('win')) return 'windows';
+  if (ua.includes('mac')) return 'mac';
+  return 'linux';
+}
+
+const PLATFORM_INFO: Record<Platform, { label: string; file: string; icon: string }> = {
+  windows: { label: 'Windows', file: 'iOS-Simulator-Setup.exe', icon: '⊞' },
+  mac:     { label: 'macOS',   file: 'iOS-Simulator.dmg',       icon: '' },
+  linux:   { label: 'Linux',   file: 'iOS-Simulator.AppImage',  icon: '🐧' },
+};
+
+const ALL_PLATFORMS: Platform[] = ['windows', 'mac', 'linux'];
+
 function openSimulatorPopup(device?: DeviceId) {
-  // Default to picker size; the simulator will resize itself after device selection
   const pickerW = 400;
   const pickerH = 600 + TITLEBAR_HEIGHT;
 
@@ -48,6 +67,8 @@ function openSimulatorPopup(device?: DeviceId) {
 
 export function LandingPage() {
   const [popupBlocked, setPopupBlocked] = useState(false);
+  const [showDownloads, setShowDownloads] = useState(false);
+  const detectedPlatform = detectPlatform();
 
   const handleLaunch = (device?: DeviceId) => {
     const popup = openSimulatorPopup(device);
@@ -74,12 +95,45 @@ export function LandingPage() {
           Launch in Browser
         </button>
 
-        <a
-          href="#download"
-          className="px-8 py-4 border border-white/20 text-white font-semibold rounded-xl text-lg hover:bg-white/5 transition-all text-center"
-        >
-          Download Desktop App
-        </a>
+        <div className="relative">
+          <button
+            onClick={() => setShowDownloads(!showDownloads)}
+            className="px-8 py-4 border border-white/20 text-white font-semibold rounded-xl text-lg hover:bg-white/5 transition-all text-center w-full"
+          >
+            Download for {PLATFORM_INFO[detectedPlatform].label}
+          </button>
+
+          {showDownloads && (
+            <div className="absolute top-full mt-2 left-0 right-0 bg-[#1C1C1E] border border-white/10 rounded-xl overflow-hidden shadow-2xl z-50">
+              {ALL_PLATFORMS.map((p) => {
+                const info = PLATFORM_INFO[p];
+                const isCurrent = p === detectedPlatform;
+                return (
+                  <a
+                    key={p}
+                    href={`${DOWNLOAD_BASE}/${info.file}`}
+                    className={`flex items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-white/10 ${
+                      isCurrent ? 'text-[var(--accent)]' : 'text-white/70'
+                    }`}
+                  >
+                    <span className="text-base w-5 text-center">{info.icon}</span>
+                    <span className="flex-1">{info.label}</span>
+                    <span className="text-[10px] text-white/30">{info.file}</span>
+                  </a>
+                );
+              })}
+              <a
+                href={`https://github.com/${ELECTRON_REPO}/releases`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 px-4 py-3 text-sm text-white/40 hover:text-white/60 hover:bg-white/5 border-t border-white/5"
+              >
+                <span className="text-base w-5 text-center">...</span>
+                <span>All releases</span>
+              </a>
+            </div>
+          )}
+        </div>
       </div>
 
       {popupBlocked && (
