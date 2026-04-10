@@ -5,7 +5,8 @@ import type { DeviceId } from '../constants/devices';
 const TITLEBAR_HEIGHT = 38;
 
 const ELECTRON_REPO = 'ChrisColeTech/ios-simulator-v2';
-const DOWNLOAD_BASE = `https://github.com/${ELECTRON_REPO}/releases/latest/download`;
+const RELEASE_VERSION = 'v2.0.0';
+const DOWNLOAD_BASE = `https://github.com/${ELECTRON_REPO}/raw/main/releases/${RELEASE_VERSION}`;
 
 type Platform = 'windows' | 'mac' | 'linux';
 
@@ -17,9 +18,9 @@ function detectPlatform(): Platform {
 }
 
 const PLATFORM_INFO: Record<Platform, { label: string; file: string; icon: string }> = {
-  windows: { label: 'Windows', file: 'iOS-Simulator-Setup.exe', icon: '⊞' },
-  mac:     { label: 'macOS',   file: 'iOS-Simulator.dmg',       icon: '' },
-  linux:   { label: 'Linux',   file: 'iOS-Simulator.AppImage',  icon: '🐧' },
+  windows: { label: 'Windows', file: 'windows/iOS Simulator 1.0.0.zip', icon: '⊞' },
+  mac:     { label: 'macOS',   file: 'macos/iOS Simulator.dmg',          icon: '' },
+  linux:   { label: 'Linux',   file: 'linux/iOS Simulator.AppImage',     icon: '🐧' },
 };
 
 const ALL_PLATFORMS: Platform[] = ['windows', 'mac', 'linux'];
