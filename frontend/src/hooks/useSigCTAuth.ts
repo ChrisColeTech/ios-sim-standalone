@@ -69,7 +69,7 @@ export function useSigCTAuth() {
       const body = new URLSearchParams({
         grant_type: 'authorization_code',
         client_id: SIGCT_OAUTH.clientId,
-        client_secret: 'aw-8Q~U5-BU6wPpRbZl1QBIy9ceu03IplZH1bbn3',
+        client_secret: '',
         code,
         scope: SIGCT_OAUTH.scope,
         redirect_uri: SIGCT_OAUTH.redirectUri,
