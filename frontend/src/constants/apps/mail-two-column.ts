@@ -1,0 +1,1 @@
+// Stripped fake mail two-column data for real implementation

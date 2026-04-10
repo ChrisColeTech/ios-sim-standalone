@@ -1,0 +1,101 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ios-gray: #8e8e93;
+  --color-ios-gray-dark: #1c1c1e;
+  --color-ios-gray-light: #f2f2f7;
+  --color-ios-green: #34c759;
+  --color-ios-red: #ff3b30;
+  --color-ios-yellow: #ff9f0a;
+  --color-ios-surface: #2c2c2e;
+  --color-ios-surface-elevated: #3a3a3c;
+  --color-ios-separator: #38383a;
+  --color-ios-separator-light: #c6c6c8;
+}
+
+@layer base {
+  :root {
+    --surface: rgba(12, 18, 32, 0.92);
+    --surface-soft: rgba(255, 255, 255, 0.08);
+    --surface-strong: rgba(255, 255, 255, 0.14);
+    --text-muted: rgba(245, 247, 255, 0.72);
+    --accent: #86a7ff;
+    --scrollbar-thumb: rgba(143, 154, 173, 0.6);
+    --scrollbar-thumb-hover: rgba(143, 154, 173, 0.82);
+    --scrollbar-size: 10px;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at top, rgba(95, 130, 255, 0.25), transparent 35%),
+      linear-gradient(180deg, #0d1324 0%, #090d18 100%);
+    color: #f5f7ff;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: var(--scrollbar-size);
+    height: var(--scrollbar-size);
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background-clip: padding-box;
+    min-height: 28px;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+  }
+
+  *::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  button {
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    color: inherit;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .wails-drag {
+    -webkit-app-region: drag;
+  }
+
+  .wails-no-drag {
+    -webkit-app-region: no-drag;
+  }
+}

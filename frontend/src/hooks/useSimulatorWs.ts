@@ -35,7 +35,13 @@ export function useSimulatorWs(
   useUiStoreState((s) => s.deviceFamily);
   useUiStoreState((s) => s.isLandscape);
 
-  const [state, setState] = useState<SimulatorWsState>(FALLBACK_STATE);
+  const [state, setState] = useState<SimulatorWsState>(() => {
+    if (isBrowser) {
+      const s = useUiStoreState.getState();
+      return { device: s.deviceId, isLandscape: s.isLandscape, theme: s.theme, devToolsOpen: false };
+    }
+    return FALLBACK_STATE;
+  });
   const wsRef = useRef<WebSocket | null>(null);
   const retryRef = useRef(RECONNECT_MS);
   const mountedRef = useRef(true);

@@ -1,0 +1,1 @@
+export { CameraCaptureLayout } from './CameraCaptureLayout';

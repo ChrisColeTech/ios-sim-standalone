@@ -1,0 +1,1 @@
+// Stripped fake two-column selection hook for real implementation

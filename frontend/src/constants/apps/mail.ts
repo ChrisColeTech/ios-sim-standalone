@@ -1,0 +1,1 @@
+// Stripped fake mail data for real implementation
