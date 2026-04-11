@@ -62,6 +62,7 @@ export function SigCTOAuthScreen(props: SigCTOAuthScreenProps) {
       <webview
         ref={props.webviewRef}
         src={props.authUrl}
+        partition="persist:simulator"
         className="h-full w-full"
       />
     </SafariBrowserLayout>

@@ -7,7 +7,17 @@ import { SigCTLoginScreen } from './screens/SigCTLoginScreen';
 import { SigCTOAuthScreen } from './screens/SigCTOAuthScreen';
 import { SigCTHomeMenuScreen } from './screens/SigCTHomeMenuScreen';
 import { SigCTDSCMenuScreen } from './screens/SigCTDSCMenuScreen';
+import { SigCTSigLiveScreen } from './screens/SigCTSigLiveScreen';
+import { SigCTAnalyticsScreen } from './screens/SigCTAnalyticsScreen';
+import { SigCTStoreLocatorScreen } from './screens/SigCTStoreLocatorScreen';
+import { SigCTStoreDetailScreen } from './screens/SigCTStoreDetailScreen';
+import { SigCTJobsScreen } from './screens/SigCTJobsScreen';
+import { SigCTMorningReportScreen } from './screens/SigCTMorningReportScreen';
+import { SigCTAboutScreen } from './screens/SigCTAboutScreen';
+import { SigCTHelpScreen } from './screens/SigCTHelpScreen';
+import { SigCTAlertsScreen } from './screens/SigCTAlertsScreen';
 import { IOSAlert } from '../../../components/ui/IOSAlert';
+import { IOSModalPresentation } from '../../../components/ui/IOSModalPresentation';
 import type { SigCTBannerPageProps, SigCTScreen } from '../../../types/custom-apps/sigct-banner';
 
 export function SigCTBannerPage(props: SigCTBannerPageProps) {
@@ -16,27 +26,26 @@ export function SigCTBannerPage(props: SigCTBannerPageProps) {
   const screen = o.nav.currentScreen;
   const bgClass = isDark ? 'bg-ios-gray-dark' : 'bg-ios-gray-light';
 
-  // Track which sidebar row is selected (for iPad detail pane)
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
   const [detailTitle, setDetailTitle] = useState<string | undefined>(undefined);
 
-  // Screens that should navigate away (replace the whole view) rather than swap the detail pane
-  const NAVIGATE_SCREENS: SigCTScreen[] = ['dsc-menu', 'store-locator', 'dsc-locator', 'alerts', 'help', 'about'];
+  const NAVIGATE_SCREENS: SigCTScreen[] = [
+    'dsc-menu', 'store-locator', 'dsc-locator', 'store-detail',
+    'siglive-summary', 'analytics', 'jobs-summary', 'morning-report',
+    'alerts', 'help', 'about',
+  ];
 
   const handleSidebarSelect = useCallback((scr: SigCTScreen, title?: string) => {
     if (props.deviceFamily === 'ipad' && !NAVIGATE_SCREENS.includes(scr)) {
-      // On iPad, selecting a sidebar row swaps the detail content
       setSelectedRowId(scr);
       setDetailTitle(title);
     } else {
-      // Navigate to a new screen
       setSelectedRowId(null);
       setDetailTitle(undefined);
       o.handleMenuSelect(scr, title);
     }
   }, [props.deviceFamily, o]);
 
-  // Build detail content based on selected sidebar row
   const detailContent = selectedRowId ? (
     <div className={`flex h-full flex-col items-center justify-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}>
       <span className="text-[11px] font-semibold">{detailTitle ?? selectedRowId}</span>
@@ -51,19 +60,7 @@ export function SigCTBannerPage(props: SigCTBannerPageProps) {
     onCancel: o.auth.cancelOAuth,
   });
 
-  if (o.auth.oauthUrl) {
-    return (
-      <AppPageShell backgroundClassName={bgClass}>
-        <SigCTOAuthScreen
-          authUrl={o.auth.oauthUrl} redirectPrefix={SIGCT_OAUTH.redirectUri}
-          isDark={isDark} onAuthCode={o.handleAuthCode} onCancel={o.auth.cancelOAuth}
-          webviewRef={webview.webviewRef} isLoading={webview.isLoading}
-          currentUrl={webview.currentUrl} reload={webview.reload}
-          goBack={webview.goBack} goForward={webview.goForward}
-        />
-      </AppPageShell>
-    );
-  }
+  const goHome = o.handleGoHome;
 
   const renderScreen = () => {
     switch (screen) {
@@ -98,6 +95,113 @@ export function SigCTBannerPage(props: SigCTBannerPageProps) {
           />
         );
 
+      case 'siglive-summary':
+        return (
+          <SigCTSigLiveScreen
+            data={o.data.sigLiveData}
+            title={o.data.sigLiveTitle}
+            isLoading={o.data.isLoading}
+            canGoBack={o.data.sigLiveCanGoBack}
+            isDark={isDark}
+            onDrillDown={o.data.drillDownSigLive}
+            onBack={o.data.goBackSigLive}
+            onClose={goHome}
+          />
+        );
+
+      case 'analytics':
+        return (
+          <SigCTAnalyticsScreen
+            data={o.data.salesData}
+            title={o.data.salesTitle}
+            salesType={o.activeSalesType}
+            isLoading={o.data.isLoading}
+            canGoBack={o.data.salesCanGoBack}
+            isDark={isDark}
+            onDrillDown={(sale) => o.data.drillDownSales(sale, o.activeSalesType)}
+            onBack={() => o.data.goBackSales(o.activeSalesType)}
+            onClose={goHome}
+          />
+        );
+
+      case 'store-locator':
+        return (
+          <SigCTStoreLocatorScreen
+            locations={o.data.storeLocations}
+            isLoading={o.data.isLoading}
+            isDark={isDark}
+            title="Store Locator"
+            onSelect={o.handleStoreSelect}
+            onBack={goHome}
+          />
+        );
+
+      case 'dsc-locator':
+        return (
+          <SigCTStoreLocatorScreen
+            locations={o.data.dscLocations}
+            isLoading={o.data.isLoading}
+            isDark={isDark}
+            title="D&SC Locator"
+            onSelect={o.handleStoreSelect}
+            onBack={goHome}
+          />
+        );
+
+      case 'store-detail':
+        return (
+          <SigCTStoreDetailScreen
+            detail={o.data.selectedStoreDetail}
+            isLoading={o.data.isLoading}
+            isDark={isDark}
+            onBack={o.handleStoreDetailBack}
+          />
+        );
+
+      case 'jobs-summary':
+        return (
+          <SigCTJobsScreen
+            summary={o.data.jobsSummary}
+            entities={o.data.jobsEntities}
+            tab={o.data.jobsTab}
+            title={o.data.jobsTitle}
+            isLoading={o.data.isLoading}
+            canGoBack={o.data.jobsCanGoBack}
+            isDark={isDark}
+            onTabChange={o.data.setJobsTab}
+            onDrillDown={o.data.drillDownJobs}
+            onBack={o.data.goBackJobs}
+            onClose={goHome}
+          />
+        );
+
+      case 'morning-report':
+        return (
+          <SigCTMorningReportScreen
+            data={o.data.morningData}
+            customerData={o.data.morningCustomerData}
+            tab={o.data.morningTab}
+            title={o.data.morningTitle}
+            isStore={o.data.morningIsStore}
+            isLoading={o.data.isLoading}
+            canGoBack={o.data.morningCanGoBack}
+            isDark={isDark}
+            onTabChange={o.data.setMorningTab}
+            onDrillDown={o.data.drillDownMorning}
+            onBack={o.data.goBackMorning}
+            onClose={goHome}
+          />
+        );
+
+      case 'about':
+        return <SigCTAboutScreen username={o.auth.username} isDark={isDark} onBack={goHome} />;
+
+      case 'help':
+        return <SigCTHelpScreen isDark={isDark} onBack={goHome} />;
+
+      case 'alerts':
+        return <SigCTAlertsScreen alertCount={0} isDark={isDark} onBack={goHome} />;
+
       default:
         return (
           <div className={`flex h-full flex-col items-center justify-center gap-2 ${isDark ? 'text-white' : 'text-black'}`}>
@@ -107,7 +211,7 @@ export function SigCTBannerPage(props: SigCTBannerPageProps) {
               onClick={() => o.nav.goBack()}
               type="button"
             >
-              ‹ Back
+              Back
             </button>
           </div>
         );
@@ -119,6 +223,15 @@ export function SigCTBannerPage(props: SigCTBannerPageProps) {
       <div className="relative h-full w-full overflow-hidden">
         {renderScreen()}
       </div>
+      <IOSModalPresentation open={!!o.auth.oauthUrl}>
+        <SigCTOAuthScreen
+          authUrl={o.auth.oauthUrl ?? ''} redirectPrefix={SIGCT_OAUTH.redirectUri}
+          isDark={isDark} onAuthCode={o.handleAuthCode} onCancel={o.auth.cancelOAuth}
+          webviewRef={webview.webviewRef} isLoading={webview.isLoading}
+          currentUrl={webview.currentUrl} reload={webview.reload}
+          goBack={webview.goBack} goForward={webview.goForward}
+        />
+      </IOSModalPresentation>
       <IOSAlert
         open={!!webview.alertMessage}
         title="SigCT"
